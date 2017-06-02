@@ -1,0 +1,26 @@
+# Riccardo Malavolti, 2017
+# This is a template file for a DFA scheme, if you wanna add a comment use [#]
+# First of all you have to write DFA states (set Q) all in the first avaiable line, so:
+q1,q2,q3,q4,q5,q6,q7,q8
+# are states for this DFA.
+# Now you have to set the start state:
+q1
+# Ok, what are final/apc states?
+q1,q3,q4,q5
+# Write down here your alphabet as [symbol_1],[symbol_2],... Don't use spaces!
+a,b
+# In the following lines you can define the transitions, use the template [start_state],[symbol],[final_state]
+# you can call states as you want but be careful with spaces. States are coded with strings and symbol with chars
+q1,a,q2
+q1,b,q5
+q2,a,q3
+q2,b,q6
+q3,a,q4
+q3,b,q3
+q4,a,q4
+q4,b,q3
+q5,a,q6
+q5,b,q1
+q6,a,q5
+q6,b,q2
+q7,a,q8
