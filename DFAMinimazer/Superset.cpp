@@ -116,3 +116,9 @@ Partition* Superset::PartitionByName(string label) {
 	return NULL;
 }
 
+State Superset::getRepresentOf(State s) {
+	Partition* p = PartitionByName(getPartitionIndexByFinalState(s));
+	SetOfStates::iterator it;
+	it = p->part.begin();
+	return *it;
+}

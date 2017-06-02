@@ -17,6 +17,13 @@ bool TransitionFunction::addTransition(Transition t) {
 	return delta.insert(t).second;
 }
 
+bool TransitionFunction::addTransition(State start, State end, char symbol) {
+	Transition t;
+	t.start_state = start;
+	t.finish_state = end;
+	t.simbol = symbol;
+}
+
 void TransitionFunction::removeTransition(Transition t) {
 	delta.erase(t);
 }

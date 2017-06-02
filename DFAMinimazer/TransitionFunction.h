@@ -27,6 +27,7 @@ public:
 	TransitionFunction(set<Transition, Comparison> f);
 	~TransitionFunction();
 	bool addTransition(Transition c);
+	bool addTransition(State start, State end, char symbol);
 	void removeTransition(Transition c);
 	State getFinalState(string init, char simbol);
 	void print();

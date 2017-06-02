@@ -77,13 +77,36 @@ Superset* RaffinaPartizione(DFA *dfa, Superset* S) {
 }
 DFA* CollassaStati(DFA* dfa, Superset* S) {
 
-	set<Partition>::iterator it;
 
-	for (it = S->getPartitions()->begin(); it != S->getPartitions()->end(); it++) {
+	// I find the start state's partition
 
+	State initial_state = S->getRepresentOf(dfa->getInitilalState());
+
+	// Now I build the new Q and the new transition function
+	State s, represent;
+	SetOfStates Q, F;
+	Alphabet E = dfa->getAlphabet();
+	TransitionFunction delta;
+	SetOfStates::iterator it;
+	Alphabet::iterator al;
+
+	for (it = dfa->getAllStates().begin(); it !=dfa->getAllStates().end(); it++) {
+		represent = S->getRepresentOf(*it);
+		Q.insert(represent);
+		for (al = E.begin(); al != E.end(); al++) {
+			s = dfa->getFinalState(*it, *al);
+			delta.addTransition(represent, S->getRepresentOf(s), *al);
+		}
 	}
 
-	return dfa;
+	// time for F
+	for (it = dfa->getFinalStates().begin(); it != dfa->getFinalStates().end(); it++) {
+		represent = S->getRepresentOf(*it);
+		F.insert(represent);
+	}
+
+	dfa->~DFA();
+	return new DFA(Q, E, delta, initial_state, F);
 }
 // DA FARE
 /*
@@ -118,7 +141,8 @@ int main() {
 	cout << "Dopo il raffinamento" << endl;
 	Partizionamento->print();
 	cout << endl;
-	cout << "Stampa Riepilogo" << endl;
+	CollassaStati(my_dfa, Partizionamento);
+	cout << "Dopo il collasso delle classi di equivalenza" << endl;
 	my_dfa->StampaRiepilogo();
 	
 

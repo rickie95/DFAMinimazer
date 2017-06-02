@@ -44,4 +44,5 @@ public:
 	bool areEquals(const SetOfStates* S1, const SetOfStates* S2);
 	string getPartitionIndexByFinalState(State state);
 	Partition* PartitionByName(string label);
+	State getRepresentOf(State s);
 };
