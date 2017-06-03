@@ -1,6 +1,4 @@
 /* DFA.h
-Contiene le signature dei metodi della classe DFA
-L'implementazione è fornita nel file DFA.cpp
 
 Riccardo Malavolti, 2017
 */
@@ -17,9 +15,6 @@ using namespace std;
 typedef string State;
 typedef set<State> SetOfStates;
 typedef set<char> Alphabet;
-//typedef set<SetOfStates> Partition;
-
-
 
 class DFA {
 private:
@@ -30,15 +25,15 @@ private:
 
 public:
 	DFA(SetOfStates Q, Alphabet E, TransitionFunction delta,  State q, SetOfStates A);
+	DFA();
 	~DFA();
+	void copyOf(SetOfStates *Q, Alphabet* E, State* q, TransitionFunction *delta, SetOfStates *A);
 	SetOfStates getAllStates();
 	SetOfStates getFinalStates();
 	Alphabet getAlphabet();
 	State getInitilalState();
 	State getFinalState(string init, char simbol);
-	SetOfStates Partiziona(DFA dfa, SetOfStates P);
-	DFA Unisci(DFA dfa, SetOfStates P);
 	void LoadDFA();
-	void StampaRiepilogo();
+	void PrintDFA();
 	SetOfStates Q_meno_A();
 };

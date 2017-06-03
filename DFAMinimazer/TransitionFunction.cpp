@@ -1,4 +1,4 @@
-#include "stdafx.h"
+// #include "stdafx.h" necessary for Visual Studio
 #include "TransitionFunction.h"
 #include <iostream>
 
@@ -22,6 +22,8 @@ bool TransitionFunction::addTransition(State start, State end, char symbol) {
 	t.start_state = start;
 	t.finish_state = end;
 	t.simbol = symbol;
+	this->delta.insert(t);
+	return true;
 }
 
 void TransitionFunction::removeTransition(Transition t) {
@@ -29,7 +31,7 @@ void TransitionFunction::removeTransition(Transition t) {
 }
 
 TransitionFunction::~TransitionFunction() {
-	//delta.clear();
+	delta.clear();
 }
 
 State TransitionFunction::getFinalState(string init, char simbol) {
@@ -46,5 +48,10 @@ State TransitionFunction::getFinalState(string init, char simbol) {
 void TransitionFunction::print() {
 	set<Transition>::iterator it;
 	for (it = delta.begin(); it != delta.end(); it++)
-		cout <<"TRANS ("<<it->start_state << "," << it->simbol << ") -> " << it->finish_state << endl;
+		cout <<"("<<it->start_state << "," << it->simbol << ") -> " << it->finish_state << endl;
+}
+
+set<Transition, Comparison> TransitionFunction::getTransitions()
+{
+	return this->delta;
 }

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+// #include "stdafx.h" necessary for Visual Studio
 #include "DFA.h"
 
 DFA::DFA(SetOfStates Q, Alphabet E, TransitionFunction delta, State q, SetOfStates A) {
@@ -9,8 +9,35 @@ DFA::DFA(SetOfStates Q, Alphabet E, TransitionFunction delta, State q, SetOfStat
 	this->delta = delta;
 }
 
+DFA::DFA() {};
+
+void DFA::copyOf(SetOfStates *Q, Alphabet* E, State* q, TransitionFunction *delta, SetOfStates *A)
+{
+	SetOfStates::iterator it;
+	for (it = Q->begin(); it != Q->end(); it++) { //Q
+		this->Q.insert(*it);
+	}
+	for (it = A->begin(); it != A->end(); it++) {//F
+		this->A.insert(*it);
+	}
+	Alphabet::iterator al;
+	for (al = E->begin(); al != E->end(); al++) {//E
+		this->E.insert(*al);
+	}
+	this->q = *q; //qo
+	set<Transition>::iterator trans;
+	set<Transition, Comparison> del = delta->getTransitions();
+	for (trans = del.begin(); trans != del.end(); trans++) { //trans
+		Transition t;
+		t.start_state = trans->start_state;
+		t.finish_state = trans->finish_state;
+		t.simbol = trans->simbol;
+		this->delta.addTransition(t);
+	}
+}
+
 DFA::~DFA() {
-	//delta.~TransitionFunction();
+	delta.~TransitionFunction();
 }
 
 
@@ -32,16 +59,6 @@ State DFA::getInitilalState() {
 
 State DFA::getFinalState(string init, char simbol) {
 	return delta.getFinalState(init, simbol);
-}
-
-SetOfStates DFA::Partiziona(DFA dfa, SetOfStates P) {
-
-	return P;
-}
-
-DFA DFA::Unisci(DFA dfa, SetOfStates P) {
-
-	return dfa;
 }
 
 
@@ -68,7 +85,7 @@ void DFA::LoadDFA() {
 
 			if (line[0] != '#') {
 
-				if (counter == 1) { // la prima riga riguarda l'insieme degli stati
+				if (counter == 1) { // first row: states
 					stringstream ss(line);
 					vector<string> vect;
 
@@ -82,11 +99,11 @@ void DFA::LoadDFA() {
 					}
 					counter++;
 				}
-				else if (counter == 2) { // la seconda riga riguarda lo stato iniziale
+				else if (counter == 2) { // second row: initial state
 					q = line;
 					counter++;
 				}
-				else if (counter == 3) { // la terza contiene gi stati accettanti
+				else if (counter == 3) { // third row: final states
 					stringstream ss(line);
 					vector<string> vect;
 
@@ -100,7 +117,7 @@ void DFA::LoadDFA() {
 					}
 					counter++;
 				}
-				else if (counter == 4) {// la quarta i simboli dell'alfabeto
+				else if (counter == 4) {// fourth row: alphabet
 					stringstream ss(line);
 					vector<string> vect;
 
@@ -131,35 +148,34 @@ void DFA::LoadDFA() {
 		}
 
 		file.close();
+
+		cout << "DFA loaded with success!" << endl;
 	}
 	else {
-		cout << "file non trovato" << endl;
+		cout << "Error: file not found." << endl;
 	}
-	/* END OF PARSING*/
-	cout << " DFA caricato." << endl;
 }
 
-void DFA::StampaRiepilogo() {
-	cout << "Stati :";
+void DFA::PrintDFA() {
+	cout << "States :";
 	SetOfStates::iterator it;
 	for (it = Q.begin(); it != Q.end(); it++) {
 		cout << *it << " ";
 	}
 	cout << endl;
-	cout << "Stati accettanti :";
+	cout << "Final states :";
 	for (it = A.begin(); it != A.end(); it++) {
 		cout << *it << " ";
 	}
 	cout << endl;
-	cout << "Stato iniziale: " << q << endl;
-	cout << "Simboli dell'alfabeto :";
+	cout << "Initial state: " << q << endl;
+	cout << "Alphabet: ";
 	Alphabet::iterator iterator;
 	for (iterator = E.begin(); iterator != E.end(); iterator++) {
 		cout << *iterator << " ";
 	}
 
 	cout << endl;
-	cout << "Transizioni: " << endl;
-
+	cout << "Transitions: " << endl;
 	delta.print();
 }

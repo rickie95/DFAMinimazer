@@ -1,15 +1,21 @@
 /* 
-	DFAMinimazer: based on Hogberg and Larsson (Umea University, Sweden) work "DFA minimisation using the Myhill - Nerode theorem"
+	DFAMinimazer: based on Hogberg and Larsson's (Umea University, Sweden) work "DFA minimisation using the Myhill - Nerode theorem"
 	
 	Riccardo Malavolti, 2017
+
+	UnreachableStates()     Removes all states unreachable from the initial state.
+	RefinePartition()		Creates and refine a partition of Q, at the end produces a partition for every 
+							class of states.
+	Collapse()				Collapses every partition: if one has more than a state is used a represent (the first in the list).
+							Transition function is also modified.
 */
 
-#include "stdafx.h"
+// #include "stdafx.h" necessary for Visual Studio
 #include "TransitionFunction.h"
 #include "DFA.h"
 #include "Superset.h"
 
-DFA* StatiIrraggiungibili(DFA* dfa) {
+DFA* UnreachableStates(DFA* dfa) {
 	
 	State s;
 	SetOfStates Q, F;
@@ -19,7 +25,7 @@ DFA* StatiIrraggiungibili(DFA* dfa) {
 	SetOfStates::iterator it;
 	Alphabet::iterator al;
 
-	Q.insert(dfa->getInitilalState()); // lo stato iniziale è sicuramente raggiungibile
+	Q.insert(dfa->getInitilalState()); // start state is oblivliosy included
 
 	for (it = Q.begin(); it != Q.end(); it++) {
 		for (al = E.begin(); al != E.end(); al++) {
@@ -46,7 +52,7 @@ DFA* StatiIrraggiungibili(DFA* dfa) {
 	return n_dfa;
 }
 
-Superset* RaffinaPartizione(DFA *dfa, Superset* S) {
+Superset* RefinePartition(DFA *dfa, Superset* S) {
 	Superset* New_P = new Superset();
 
 	SetOfStates::iterator it;
@@ -57,10 +63,10 @@ Superset* RaffinaPartizione(DFA *dfa, Superset* S) {
 	for (it = allStates.begin(); it != allStates.end(); it++) {
 		Obs = "";
 		for (al = alfabet.begin(); al != alfabet.end(); al++) {
-			Obs += S->getPartitionIndexByFinalState(dfa->getFinalState(*it, *al));  //creo l'etichetta
+			Obs += S->getPartitionIndexByFinalState(dfa->getFinalState(*it, *al));  //create the label
 		}
 		Partition* _ptr = New_P->PartitionByName(Obs);
-		if (_ptr != NULL) { // la partizione esiste?
+		if (_ptr != NULL) {			// partition exits?
 			_ptr->part.insert(*it);
 		}
 		else {
@@ -70,12 +76,12 @@ Superset* RaffinaPartizione(DFA *dfa, Superset* S) {
 		}
 	}
 	
-	if (New_P->isEqual(S))
+	if (New_P->isEqual(S)) //if the new partition is equal to the old one, it means we have reached a stable partition
 		return New_P;
 	
-	return RaffinaPartizione(dfa, New_P);
+	return RefinePartition(dfa, New_P); // if not we continue with the refinement
 }
-DFA* CollassaStati(DFA* dfa, Superset* S) {
+DFA* Collapse(DFA* dfa, Superset* S) {
 
 
 	// I find the start state's partition
@@ -84,15 +90,15 @@ DFA* CollassaStati(DFA* dfa, Superset* S) {
 
 	// Now I build the new Q and the new transition function
 	State s, represent;
-	SetOfStates Q, F;
+	SetOfStates Q = dfa->getAllStates(), F = dfa->getFinalStates(), New_Q, New_F;
 	Alphabet E = dfa->getAlphabet();
 	TransitionFunction delta;
 	SetOfStates::iterator it;
 	Alphabet::iterator al;
 
-	for (it = dfa->getAllStates().begin(); it !=dfa->getAllStates().end(); it++) {
+	for (it = Q.begin(); it != Q.end(); it++) {
 		represent = S->getRepresentOf(*it);
-		Q.insert(represent);
+		New_Q.insert(represent);
 		for (al = E.begin(); al != E.end(); al++) {
 			s = dfa->getFinalState(*it, *al);
 			delta.addTransition(represent, S->getRepresentOf(s), *al);
@@ -100,19 +106,15 @@ DFA* CollassaStati(DFA* dfa, Superset* S) {
 	}
 
 	// time for F
-	for (it = dfa->getFinalStates().begin(); it != dfa->getFinalStates().end(); it++) {
+	for (it = F.begin(); it != F.end(); it++) {
 		represent = S->getRepresentOf(*it);
-		F.insert(represent);
+		New_F.insert(represent);
 	}
-
-	dfa->~DFA();
-	return new DFA(Q, E, delta, initial_state, F);
+	DFA *n_dfa = new DFA();
+	n_dfa->copyOf(&New_Q, &E, &initial_state, &delta, &New_F);
+	return n_dfa;
 }
-// DA FARE
-/*
-	-> Funzione COLLAPSE
 
-*/
 
 int main() {
 
@@ -121,29 +123,36 @@ int main() {
 	TransitionFunction delta;
 	Alphabet E;
 	DFA *my_dfa = new DFA(Q, E, delta, q, A);
+	cout << "########## DFA MINIMAZER ########" << endl;
+	cout << " - Riccardo Malavolti, 2017 - " << endl << endl;
 
 	my_dfa->LoadDFA();
+	cout << endl << "---- Original DFA ----" << endl;
+	my_dfa->PrintDFA();
 
-	my_dfa->StampaRiepilogo();
+	my_dfa = UnreachableStates(my_dfa);
 
-	my_dfa = StatiIrraggiungibili(my_dfa);
-
+	cout << endl << "---- Partitions ----" << endl;
 	
-	Superset* Partizionamento = new Superset();			     // Preparo la partizione {Q\A, A}
-	Partizionamento->addPartition(my_dfa->getFinalStates()); // e gli stati accettanti
-	Partizionamento->addPartition(my_dfa->Q_meno_A());		 // gli stati non accettanti
+	Superset* Partition = new Superset();			     // I make the partition {Q\A, A}
+	Partition->addPartition(my_dfa->getFinalStates());   // with final and 
+	Partition->addPartition(my_dfa->Q_meno_A());		 // not final states
 	
-	cout << "Prima del raffinamento" << endl;
-	Partizionamento->print();
-
-
-	Partizionamento = RaffinaPartizione(my_dfa, Partizionamento);
-	cout << "Dopo il raffinamento" << endl;
-	Partizionamento->print();
 	cout << endl;
-	CollassaStati(my_dfa, Partizionamento);
-	cout << "Dopo il collasso delle classi di equivalenza" << endl;
-	my_dfa->StampaRiepilogo();
+	cout << "Before refinement" << endl;
+	Partition->print();
+
+	Partition = RefinePartition(my_dfa, Partition);
+
+	cout << endl<<"After refinement" << endl;
+	Partition->print();
+	cout << endl;
+
+	cout << endl << "---- Minimal DFA ----" << endl;
+
+	my_dfa = Collapse(my_dfa, Partition);
+	cout << "After the collapse of equivalence classes, there's the minimal DFA:" << endl;
+	my_dfa->PrintDFA();
 	
 
 	system("pause");

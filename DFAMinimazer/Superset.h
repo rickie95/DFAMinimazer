@@ -4,7 +4,6 @@
 
 using namespace std;
 
-
 struct Partition {
 	string label;
 	SetOfStates part;

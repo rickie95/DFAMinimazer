@@ -1,4 +1,4 @@
-#include "stdafx.h"
+// #include "stdafx.h" necessary for Visual Studio
 #include "Superset.h"
 
 Superset::Superset() {
@@ -70,8 +70,9 @@ bool Superset::isEqual(Superset * S) {
 
 void Superset::print() {
 	set<Partition>::iterator it;
+	int i = num_of_parts;
 	for (it = parts.begin(); it != parts.end(); it++) {
-		cout << "Partizione #" << it->label;
+		cout << "Partizione #" << num_of_parts - (--i)<<": ";
 		for (SetOfStates::iterator set = it->part.begin(); set != it->part.end(); set++) {
 			cout << *set << " ";
 		}

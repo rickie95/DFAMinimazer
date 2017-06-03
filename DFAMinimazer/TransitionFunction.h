@@ -31,5 +31,5 @@ public:
 	void removeTransition(Transition c);
 	State getFinalState(string init, char simbol);
 	void print();
-	
+	set<Transition, Comparison> getTransitions();
 };
